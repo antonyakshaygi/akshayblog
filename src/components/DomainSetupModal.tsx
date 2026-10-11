@@ -18,17 +18,12 @@ export const DomainSetupModal: React.FC<DomainSetupModalProps> = ({ isOpen, onCl
     setTimeout(() => setCopiedKey(null), 2500);
   };
 
-  const gitCommands = `# 1. Initialize git in your project directory
-git init
+  const gitCommands = `# 1. Stage the updated workflow fix
 git add .
-git commit -m "Initial release of Akshay's Tech Blog"
+git commit -m "Fix GitHub Actions workflow: remove lockfile cache requirement"
 
-# 2. Add your GitHub repository remote
-git remote add origin https://github.com/<YOUR-GITHUB-USERNAME>/akshayblog.git
-
-# 3. Rename branch to main and push
-git branch -M main
-git push -u origin main`;
+# 2. Push to your repository
+git push origin main`;
 
   return (
     <div className="fixed inset-0 z-50 bg-stone-950/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
@@ -167,7 +162,7 @@ git push -u origin main`;
                       <td className="p-3 font-bold text-stone-900 dark:text-stone-100">CNAME</td>
                       <td className="p-3 text-stone-800 dark:text-stone-200 font-bold">akshayblog</td>
                       <td className="p-3 text-emerald-600 font-bold">
-                        &lt;YOUR-GITHUB-USERNAME&gt;.github.io
+                        antonyakshaygi.github.io
                       </td>
                       <td className="p-3 text-stone-500">Auto / DNS only</td>
                     </tr>
