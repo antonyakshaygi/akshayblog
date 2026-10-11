@@ -28,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { id: 'articles', label: 'Articles' },
+    { id: 'news', label: 'The Best India', isLive: true },
     { id: 'youtube', label: 'YouTube Hub' },
     { id: 'affiliates', label: 'Gear & Affiliates' },
     { id: 'monetization', label: 'Ad & Sponsor Manager' },
@@ -127,7 +128,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'hover:text-stone-950 dark:hover:text-white text-stone-600 dark:text-stone-400'
                 }`}
               >
-                {link.label}
+                <span className="flex items-center gap-1.5">
+                  <span>{link.label}</span>
+                  {link.isLive && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                  )}
+                </span>
                 {isActive && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-stone-900 dark:bg-white rounded-full" />
                 )}

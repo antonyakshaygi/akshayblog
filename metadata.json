@@ -1,6 +1,6 @@
 {
   "name": "Akshay's Tech Blog | Sapiexa",
-  "description": "High-performance tech blog and creator portal at akshayblog.sapiexa.com featuring YouTube integrations, affiliate marketing tools, personal ad units, and AI search optimization.",
+  "description": "High-performance tech blog and creator portal at akshayblog.sapiexa.com featuring real-time financial and tech news, daily 7 AM e-newspaper, YouTube integrations, and AI search optimization.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -17,6 +17,7 @@ import { DomainSetupModal } from './components/DomainSetupModal';
 import { ConsultationModal } from './components/ConsultationModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
+import { FinancialTechNewsPage } from './components/FinancialTechNewsPage';
 import { Footer } from './components/Footer';
 
 import { INITIAL_ARTICLES, INITIAL_AD_UNITS, INITIAL_AFFILIATE_ITEMS, AUTHOR_PROFILE } from './data/blogData';
@@ -301,6 +302,10 @@ export default function App() {
                   categories={categories}
                   onOpenYouTubeHub={() => setActiveTab('youtube')}
                   onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+                  onOpenNewsPage={() => {
+                    setActiveTab('news');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
                 />
 
                 {/* Article Feed Section */}
@@ -407,6 +412,13 @@ export default function App() {
                   </div>
                 </section>
               </>
+            )}
+
+            {activeTab === 'news' && (
+              <FinancialTechNewsPage
+                onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+                isAdminAuthenticated={isAdminAuthenticated}
+              />
             )}
 
             {activeTab === 'youtube' && (

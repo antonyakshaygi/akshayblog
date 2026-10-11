@@ -61,6 +61,18 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => {
+                    setActiveTab('news');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-stone-950 dark:hover:text-white cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>The Best India</span>
+                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-400 px-1 py-0.2 rounded font-bold">7 AM LIVE</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
                     setActiveTab('youtube');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}

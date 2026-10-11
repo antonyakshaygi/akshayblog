@@ -11,6 +11,7 @@ interface HeroSectionProps {
   categories: string[];
   onOpenYouTubeHub: () => void;
   onOpenConsultationModal: () => void;
+  onOpenNewsPage?: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -21,6 +22,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   categories,
   onOpenYouTubeHub,
   onOpenConsultationModal,
+  onOpenNewsPage,
 }) => {
   return (
     <section className="relative pt-6 pb-12 border-b border-stone-200/80 dark:border-stone-800">
@@ -50,6 +52,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
             {/* Quick action buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
+              {onOpenNewsPage && (
+                <button
+                  onClick={onOpenNewsPage}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 text-white dark:text-stone-900 text-xs sm:text-sm font-semibold transition-colors shadow-sm cursor-pointer"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>The Best India (7 AM E-Paper)</span>
+                </button>
+              )}
+
               <button
                 onClick={onOpenYouTubeHub}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
