@@ -53,7 +53,17 @@ export default function App() {
   const [articles, setArticles] = useState<Article[]>(() => {
     try {
       const saved = localStorage.getItem('akshay_blog_articles_v2');
-      return saved ? JSON.parse(saved) : INITIAL_ARTICLES;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const hasIpad = parsed.some((a: any) => a.id === 'article-ipad-11');
+        if (!hasIpad) {
+          const merged = [INITIAL_ARTICLES[0], ...parsed];
+          localStorage.setItem('akshay_blog_articles_v2', JSON.stringify(merged));
+          return merged;
+        }
+        return parsed;
+      }
+      return INITIAL_ARTICLES;
     } catch {
       return INITIAL_ARTICLES;
     }
@@ -62,7 +72,17 @@ export default function App() {
   const [affiliateItems, setAffiliateItems] = useState<AffiliateItem[]>(() => {
     try {
       const saved = localStorage.getItem('akshay_blog_affiliates_v2');
-      return saved ? JSON.parse(saved) : INITIAL_AFFILIATE_ITEMS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const hasIpadAff = parsed.some((item: any) => item.id === 'aff-ipad-11');
+        if (!hasIpadAff) {
+          const merged = [INITIAL_AFFILIATE_ITEMS[0], ...parsed];
+          localStorage.setItem('akshay_blog_affiliates_v2', JSON.stringify(merged));
+          return merged;
+        }
+        return parsed;
+      }
+      return INITIAL_AFFILIATE_ITEMS;
     } catch {
       return INITIAL_AFFILIATE_ITEMS;
     }

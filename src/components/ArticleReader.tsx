@@ -131,8 +131,15 @@ export const ArticleReader: React.FC<ArticleReaderProps> = ({
     larger: 'text-xl sm:text-2xl leading-loose',
   }[fontSizeScale];
 
-  // Pick relevant affiliate item
-  const relevantAffiliate: AffiliateItem | undefined = affiliateItems[0] || INITIAL_AFFILIATE_ITEMS[0];
+  // Pick relevant affiliate item matching article content or dedicated article affiliate
+  const relevantAffiliate: AffiliateItem | undefined = 
+    (article.affiliateItems && article.affiliateItems.length > 0 ? article.affiliateItems[0] : undefined) ||
+    affiliateItems.find(item => 
+      (article.title.toLowerCase().includes('ipad') && item.name.toLowerCase().includes('ipad')) ||
+      article.tags.some(tag => item.name.toLowerCase().includes(tag.toLowerCase()))
+    ) ||
+    affiliateItems[0] || 
+    INITIAL_AFFILIATE_ITEMS[0];
 
   return (
     <div className="min-h-screen pb-20 relative">
