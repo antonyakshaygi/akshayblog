@@ -16,6 +16,7 @@ import { ThemeCustomizerModal } from './components/ThemeCustomizerModal';
 import { DomainSetupModal } from './components/DomainSetupModal';
 import { ConsultationModal } from './components/ConsultationModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
+import { AdminLoginModal } from './components/AdminLoginModal';
 import { Footer } from './components/Footer';
 
 import { INITIAL_ARTICLES, INITIAL_AD_UNITS, INITIAL_AFFILIATE_ITEMS, AUTHOR_PROFILE } from './data/blogData';
@@ -27,6 +28,26 @@ export default function App() {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  // OWNER AUTHENTICATION STATE (Restricts editing strictly to Akshay)
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('akshay_admin_session') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [adminPasscode, setAdminPasscode] = useState<string>(() => {
+    try {
+      return localStorage.getItem('akshay_admin_passcode') || 'akshay2026';
+    } catch {
+      return 'akshay2026';
+    }
+  });
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
 
   // DYNAMIC STATE WITH LOCALSTORAGE PERSISTENCE
   const [articles, setArticles] = useState<Article[]>(() => {
@@ -109,7 +130,33 @@ export default function App() {
     setThemeSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
+  const handleSignOut = () => {
+    setIsAdminAuthenticated(false);
+    try {
+      sessionStorage.removeItem('akshay_admin_session');
+    } catch {}
+  };
+
+  const handleOpenAdmin = () => {
+    setEditingArticleId(null);
+    if (isAdminAuthenticated) {
+      setIsAdminModalOpen(true);
+    } else {
+      setIsLoginModalOpen(true);
+    }
+  };
+
+  const handleEditArticle = (article: Article) => {
+    setEditingArticleId(article.id);
+    if (isAdminAuthenticated) {
+      setIsAdminModalOpen(true);
+    } else {
+      setIsLoginModalOpen(true);
+    }
+  };
+
   const handleResetToDefaults = () => {
+    if (!isAdminAuthenticated) return;
     setArticles(INITIAL_ARTICLES);
     setAffiliateItems(INITIAL_AFFILIATE_ITEMS);
     setAdUnits(INITIAL_AD_UNITS);
@@ -175,7 +222,9 @@ export default function App() {
         onOpenSeoOptimizer={() => setIsSeoModalOpen(true)}
         onOpenDomainSetup={() => setIsDomainModalOpen(true)}
         onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
-        onOpenAdminPanel={() => setIsAdminModalOpen(true)}
+        onOpenAdminPanel={handleOpenAdmin}
+        isAdminAuthenticated={isAdminAuthenticated}
+        onSignOut={handleSignOut}
       />
 
       {/* Optional Top Header Leaderboard Ad Banner (Tastefully rendered) */}
@@ -216,6 +265,8 @@ export default function App() {
             onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
             onOpenSeoOptimizer={() => setIsSeoModalOpen(true)}
             affiliateItems={affiliateItems}
+            isAdminAuthenticated={isAdminAuthenticated}
+            onEditArticle={handleEditArticle}
           />
         ) : (
           /* Multi-tab Main View */
@@ -245,12 +296,16 @@ export default function App() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setIsAdminModalOpen(true)}
-                        className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-semibold text-stone-800 dark:text-stone-200 cursor-pointer"
-                      >
-                        <span>+ Compose Article</span>
-                      </button>
+                      {/* ONLY SHOW COMPOSE BUTTON IF LOGGED IN AS AKSHAY */}
+                      {isAdminAuthenticated && (
+                        <button
+                          onClick={() => setIsAdminModalOpen(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-xs font-semibold text-emerald-800 dark:text-emerald-300 cursor-pointer"
+                        >
+                          <span>+ Compose Article</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => setIsSeoModalOpen(true)}
                         className="hidden sm:flex items-center gap-1.5 text-xs text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer"
@@ -284,6 +339,8 @@ export default function App() {
                           article={article}
                           onSelectArticle={handleSelectArticle}
                           featured={idx === 0 && selectedCategory === 'All' && !searchQuery}
+                          isAdminAuthenticated={isAdminAuthenticated}
+                          onEditArticle={handleEditArticle}
                         />
                       ))}
                     </div>
@@ -344,12 +401,18 @@ export default function App() {
                 onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
                 items={affiliateItems}
                 setItems={setAffiliateItems}
+                isAdminAuthenticated={isAdminAuthenticated}
+                onOpenAdminLogin={handleOpenAdmin}
               />
             )}
 
             {activeTab === 'monetization' && (
               <MonetizationAdManager
                 onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+                adUnits={adUnits}
+                setAdUnits={setAdUnits}
+                isAdminAuthenticated={isAdminAuthenticated}
+                onOpenAdminLogin={handleOpenAdmin}
               />
             )}
           </>
@@ -380,10 +443,24 @@ export default function App() {
         onClose={() => setIsConsultationModalOpen(false)}
       />
 
-      {/* Admin Panel Modal */}
+      {/* Owner Login Modal (Protected by Master Passcode) */}
+      <AdminLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={() => {
+          setIsAdminAuthenticated(true);
+          setIsAdminModalOpen(true);
+        }}
+        correctPasscode={adminPasscode}
+      />
+
+      {/* Admin Panel Modal (Accessible Only When Authenticated) */}
       <AdminPanelModal
         isOpen={isAdminModalOpen}
-        onClose={() => setIsAdminModalOpen(false)}
+        onClose={() => {
+          setIsAdminModalOpen(false);
+          setEditingArticleId(null);
+        }}
         articles={articles}
         setArticles={setArticles}
         affiliateItems={affiliateItems}
@@ -391,6 +468,10 @@ export default function App() {
         adUnits={adUnits}
         setAdUnits={setAdUnits}
         onResetToDefaults={handleResetToDefaults}
+        adminPasscode={adminPasscode}
+        setAdminPasscode={setAdminPasscode}
+        onSignOut={handleSignOut}
+        initialArticleIdToEdit={editingArticleId}
       />
 
       {/* Footer */}

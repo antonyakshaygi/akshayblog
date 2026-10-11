@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Clock, Eye, Heart, Share2, Bookmark, Check, 
   Youtube, ExternalLink, Play, Pause, Volume2, Sparkles, 
-  Copy, HelpCircle, ChevronDown, ChevronUp, ShieldCheck, Tag
+  Copy, HelpCircle, ChevronDown, ChevronUp, ShieldCheck, Tag, Edit2, Lock
 } from 'lucide-react';
 import { Article, AffiliateItem } from '../types/blog';
 import { INITIAL_AFFILIATE_ITEMS, INITIAL_AD_UNITS } from '../data/blogData';
@@ -14,6 +14,8 @@ interface ArticleReaderProps {
   onOpenConsultationModal: () => void;
   onOpenSeoOptimizer: () => void;
   affiliateItems?: AffiliateItem[];
+  isAdminAuthenticated?: boolean;
+  onEditArticle?: (article: Article) => void;
 }
 
 export const ArticleReader: React.FC<ArticleReaderProps> = ({
@@ -23,6 +25,8 @@ export const ArticleReader: React.FC<ArticleReaderProps> = ({
   onOpenConsultationModal,
   onOpenSeoOptimizer,
   affiliateItems = INITIAL_AFFILIATE_ITEMS,
+  isAdminAuthenticated = false,
+  onEditArticle,
 }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [fontSizeScale, setFontSizeScale] = useState<'normal' | 'large' | 'larger'>('normal');
@@ -232,6 +236,18 @@ export const ArticleReader: React.FC<ArticleReaderProps> = ({
               <Sparkles className="w-3 h-3 text-amber-400 dark:text-amber-600" />
               <span>SEO Audit</span>
             </button>
+
+            {/* Owner Edit Shortcut (Visible Exclusively to Authenticated Owner) */}
+            {isAdminAuthenticated && onEditArticle && (
+              <button
+                onClick={() => onEditArticle(article)}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors"
+                title="Edit this article in Admin Studio (Owner Only)"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                <span>Edit Article</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

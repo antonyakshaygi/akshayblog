@@ -1,17 +1,21 @@
 import React from 'react';
-import { Youtube, Clock, Eye, Heart, ArrowUpRight, Check, Tag } from 'lucide-react';
+import { Youtube, Clock, Eye, Heart, ArrowUpRight, Check, Tag, Edit2 } from 'lucide-react';
 import { Article } from '../types/blog';
 
 interface ArticleCardProps {
   article: Article;
   onSelectArticle: (article: Article) => void;
   featured?: boolean;
+  isAdminAuthenticated?: boolean;
+  onEditArticle?: (article: Article) => void;
 }
 
 export const ArticleCard: React.FC<ArticleCardProps> = ({
   article,
   onSelectArticle,
   featured = false,
+  isAdminAuthenticated = false,
+  onEditArticle,
 }) => {
   return (
     <article
@@ -88,6 +92,19 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          {isAdminAuthenticated && onEditArticle && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditArticle(article);
+              }}
+              className="p-1 rounded-md text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer"
+              title="Edit article in Admin Studio"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </button>
+          )}
           <span className="flex items-center gap-1 font-mono tabular-nums">
             <Eye className="w-3.5 h-3.5" />
             {article.views.toLocaleString()}

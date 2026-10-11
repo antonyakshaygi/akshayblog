@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Sliders, Menu, X, Youtube, ExternalLink, Globe, Shield } from 'lucide-react';
+import { Sparkles, Sliders, Menu, X, Youtube, ExternalLink, Globe, Shield, Lock, Unlock, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -9,6 +9,8 @@ interface NavbarProps {
   onOpenDomainSetup: () => void;
   onOpenConsultationModal: () => void;
   onOpenAdminPanel: () => void;
+  isAdminAuthenticated: boolean;
+  onSignOut: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,6 +21,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenDomainSetup,
   onOpenConsultationModal,
   onOpenAdminPanel,
+  isAdminAuthenticated,
+  onSignOut,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -40,15 +44,38 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-stone-500 hidden sm:inline">·</span>
             <span className="text-stone-400 hidden sm:inline">Official Tech Blog & Creator Hub of Sapiexa</span>
           </div>
+
           <div className="flex items-center gap-3 sm:gap-4 text-[11px]">
-            <button
-              onClick={onOpenAdminPanel}
-              className="text-stone-200 hover:text-white transition-colors flex items-center gap-1 cursor-pointer bg-stone-800 hover:bg-stone-700 px-2 py-0.5 rounded font-medium"
-              title="Open Admin Studio: Create & Edit Articles, Manage Affiliates"
-            >
-              <Shield className="w-3 h-3 text-emerald-400" />
-              <span>Admin Studio</span>
-            </button>
+            {/* Conditional Owner / Admin Access */}
+            {isAdminAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onOpenAdminPanel}
+                  className="text-white bg-emerald-950/80 border border-emerald-500/50 hover:bg-emerald-900 px-2 py-0.5 rounded font-mono text-[11px] flex items-center gap-1.5 cursor-pointer"
+                  title="Open Admin Studio: Edit Articles & Manage Affiliates"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Admin: Akshay</span>
+                </button>
+                <button
+                  onClick={onSignOut}
+                  className="text-stone-400 hover:text-red-400 text-[10px] cursor-pointer"
+                  title="Lock Studio & Sign Out"
+                >
+                  Lock
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onOpenAdminPanel}
+                className="text-stone-400 hover:text-stone-200 transition-colors flex items-center gap-1 cursor-pointer text-[11px]"
+                title="Owner Portal (Restricted to Akshay)"
+              >
+                <Lock className="w-3 h-3 text-stone-400" />
+                <span className="hidden sm:inline">Owner Login</span>
+              </button>
+            )}
+
             <button
               onClick={onOpenDomainSetup}
               className="text-stone-300 hover:text-white transition-colors hidden sm:flex items-center gap-1 cursor-pointer"
@@ -121,14 +148,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: 1 primary action */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <button
-            onClick={onOpenAdminPanel}
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-semibold text-stone-700 dark:text-stone-300 transition-colors cursor-pointer"
-            title="Open Admin Studio: Create & Edit Articles"
-          >
-            <Shield className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Admin Studio</span>
-          </button>
+          {/* Only show Admin Studio button if verified as Akshay */}
+          {isAdminAuthenticated && (
+            <button
+              onClick={onOpenAdminPanel}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-xs font-semibold text-emerald-800 dark:text-emerald-300 transition-colors cursor-pointer"
+              title="Open Admin Studio: Edit Articles & Manage Deals"
+            >
+              <Shield className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Admin Studio</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenThemeCustomizer}
@@ -177,16 +207,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           ))}
           <div className="pt-2 border-t border-stone-200 dark:border-stone-800 flex flex-col gap-2">
-            <button
-              onClick={() => {
-                onOpenAdminPanel();
-                setMobileMenuOpen(false);
-              }}
-              className="text-left text-sm py-2 px-3 text-stone-900 dark:text-stone-100 font-semibold flex items-center gap-2 bg-stone-100 dark:bg-stone-900 rounded-lg"
-            >
-              <Shield className="w-4 h-4 text-emerald-600" />
-              <span>Admin Studio (Create & Edit Content)</span>
-            </button>
+            {isAdminAuthenticated ? (
+              <button
+                onClick={() => {
+                  onOpenAdminPanel();
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left text-sm py-2 px-3 text-emerald-800 dark:text-emerald-300 font-semibold flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg"
+              >
+                <Shield className="w-4 h-4 text-emerald-600" />
+                <span>Admin Studio (Logged in as Akshay)</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  onOpenAdminPanel();
+                  setMobileMenuOpen(false);
+                }}
+                className="text-left text-xs py-2 px-3 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 flex items-center gap-2"
+              >
+                <Lock className="w-3.5 h-3.5 text-stone-400" />
+                <span>Owner Login (Akshay Only)</span>
+              </button>
+            )}
             <button
               onClick={() => {
                 onOpenSeoOptimizer();

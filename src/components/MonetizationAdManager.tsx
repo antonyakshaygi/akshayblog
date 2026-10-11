@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
-import { DollarSign, BarChart3, Settings, Play, Check, Copy, ExternalLink, Mail, ShieldAlert, Sparkles, Plus } from 'lucide-react';
+import { DollarSign, BarChart3, Settings, Play, Check, Copy, ExternalLink, Mail, ShieldAlert, Sparkles, Plus, Lock, ShieldCheck } from 'lucide-react';
 import { INITIAL_AD_UNITS, AUTHOR_PROFILE } from '../data/blogData';
 import { AdUnit } from '../types/blog';
 
 interface MonetizationAdManagerProps {
   onOpenConsultationModal: () => void;
+  adUnits?: AdUnit[];
+  setAdUnits?: React.Dispatch<React.SetStateAction<AdUnit[]>>;
+  isAdminAuthenticated?: boolean;
+  onOpenAdminLogin?: () => void;
 }
 
 export const MonetizationAdManager: React.FC<MonetizationAdManagerProps> = ({
   onOpenConsultationModal,
+  adUnits: propsAdUnits,
+  setAdUnits: propsSetAdUnits,
+  isAdminAuthenticated = false,
+  onOpenAdminLogin,
 }) => {
-  const [adUnits, setAdUnits] = useState<AdUnit[]>(INITIAL_AD_UNITS);
+  const [localAdUnits, setLocalAdUnits] = useState<AdUnit[]>(INITIAL_AD_UNITS);
+  const adUnits = propsAdUnits || localAdUnits;
+  const setAdUnits = propsSetAdUnits || setLocalAdUnits;
   const [activeTab, setActiveTab] = useState<'units' | 'adsense' | 'rate-card'>('units');
   const [copiedCodeUnitId, setCopiedCodeUnitId] = useState<string | null>(null);
 
   const toggleAdStatus = (id: string) => {
+    if (!isAdminAuthenticated) {
+      if (onOpenAdminLogin) onOpenAdminLogin();
+      return;
+    }
     setAdUnits((prev) =>
       prev.map((unit) =>
         unit.id === id
@@ -25,6 +39,10 @@ export const MonetizationAdManager: React.FC<MonetizationAdManagerProps> = ({
   };
 
   const toggleAdType = (id: string) => {
+    if (!isAdminAuthenticated) {
+      if (onOpenAdminLogin) onOpenAdminLogin();
+      return;
+    }
     setAdUnits((prev) =>
       prev.map((unit) =>
         unit.id === id
@@ -181,19 +199,27 @@ export const MonetizationAdManager: React.FC<MonetizationAdManagerProps> = ({
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => toggleAdType(unit.id)}
-                      className="px-3 py-1 rounded-lg border border-stone-300 dark:border-stone-700 text-xs font-medium hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
+                      className={`px-3 py-1 rounded-lg border text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        isAdminAuthenticated
+                          ? 'border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800'
+                          : 'border-stone-200 dark:border-stone-800 text-stone-500 bg-stone-50/50 dark:bg-stone-900/30'
+                      }`}
+                      title={isAdminAuthenticated ? 'Click to toggle ad mode' : 'Locked: Owner authentication required to change ad mode'}
                     >
-                      Mode: <span className="font-semibold capitalize">{unit.type}</span>
+                      {!isAdminAuthenticated && <Lock className="w-3 h-3 text-stone-400" />}
+                      <span>Mode: <span className="font-semibold capitalize">{unit.type}</span></span>
                     </button>
                     <button
                       onClick={() => toggleAdStatus(unit.id)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer ${
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
                         unit.status === 'active'
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                           : 'bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-400'
                       }`}
+                      title={isAdminAuthenticated ? 'Click to pause/activate ad slot' : 'Locked: Owner authentication required to toggle status'}
                     >
-                      {unit.status === 'active' ? '● Active' : '○ Paused'}
+                      {!isAdminAuthenticated && <Lock className="w-3 h-3 opacity-60" />}
+                      <span>{unit.status === 'active' ? '● Active' : '○ Paused'}</span>
                     </button>
                   </div>
                 </div>

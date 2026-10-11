@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tag, Copy, Check, ExternalLink, ShieldCheck, Plus, Sparkles, Filter, TrendingUp } from 'lucide-react';
+import { Tag, Copy, Check, ExternalLink, ShieldCheck, Plus, Sparkles, Filter, TrendingUp, Lock } from 'lucide-react';
 import { INITIAL_AFFILIATE_ITEMS } from '../data/blogData';
 import { AffiliateItem } from '../types/blog';
 
@@ -7,12 +7,16 @@ interface AffiliateGearHubProps {
   onOpenConsultationModal: () => void;
   items?: AffiliateItem[];
   setItems?: React.Dispatch<React.SetStateAction<AffiliateItem[]>>;
+  isAdminAuthenticated?: boolean;
+  onOpenAdminLogin?: () => void;
 }
 
 export const AffiliateGearHub: React.FC<AffiliateGearHubProps> = ({
   onOpenConsultationModal,
   items: propsItems,
   setItems: propsSetItems,
+  isAdminAuthenticated = false,
+  onOpenAdminLogin,
 }) => {
   const [localItems, setLocalItems] = useState<AffiliateItem[]>(INITIAL_AFFILIATE_ITEMS);
   const items = propsItems || localItems;
@@ -49,6 +53,10 @@ export const AffiliateGearHub: React.FC<AffiliateGearHubProps> = ({
 
   const handleAddAffiliate = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdminAuthenticated) {
+      alert('Unauthorized. Only Akshay can add affiliate products.');
+      return;
+    }
     if (!newTitle || !newPrice) return;
 
     const newItem: AffiliateItem = {
@@ -105,13 +113,33 @@ export const AffiliateGearHub: React.FC<AffiliateGearHubProps> = ({
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-semibold hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Affiliate Product</span>
-          </button>
+          {isAdminAuthenticated ? (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+              title="Add a new affiliate product to your catalog"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add Affiliate Product</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-100/70 dark:bg-stone-900/60 text-stone-600 dark:text-stone-400 text-xs font-mono">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Curated by Akshay</span>
+              </span>
+              {onOpenAdminLogin && (
+                <button
+                  onClick={onOpenAdminLogin}
+                  className="inline-flex items-center gap-1 text-[11px] text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 cursor-pointer"
+                  title="Owner Access Only"
+                >
+                  <Lock className="w-3 h-3" />
+                  <span>Owner Edit</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

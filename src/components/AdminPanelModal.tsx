@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Shield, FileText, Tag, DollarSign, Settings, Plus, Edit2, 
-  Trash2, Check, Sparkles, Youtube, ExternalLink, Save, X, RefreshCw
+  Trash2, Check, Sparkles, Youtube, ExternalLink, Save, X, RefreshCw, Eye, EyeOff, Lock, KeyRound
 } from 'lucide-react';
 import { Article, AffiliateItem, AdUnit } from '../types/blog';
 import { AUTHOR_PROFILE } from '../data/blogData';
@@ -16,6 +16,10 @@ interface AdminPanelModalProps {
   adUnits: AdUnit[];
   setAdUnits: React.Dispatch<React.SetStateAction<AdUnit[]>>;
   onResetToDefaults: () => void;
+  adminPasscode: string;
+  setAdminPasscode: (code: string) => void;
+  onSignOut: () => void;
+  initialArticleIdToEdit?: string | null;
 }
 
 export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
@@ -28,9 +32,15 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   adUnits,
   setAdUnits,
   onResetToDefaults,
+  adminPasscode,
+  setAdminPasscode,
+  onSignOut,
+  initialArticleIdToEdit,
 }) => {
   const [activeTab, setActiveTab] = useState<'articles' | 'affiliates' | 'ads' | 'site'>('articles');
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [newPasscode, setNewPasscode] = useState(adminPasscode);
+  const [showNewPasscode, setShowNewPasscode] = useState(false);
 
   // ARTICLE FORM STATE
   const [isEditingArticle, setIsEditingArticle] = useState(false);
@@ -101,6 +111,16 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     setArticleYtTitle(art.youtubeCompanion ? art.youtubeCompanion.title : '');
     setArticleYtDuration(art.youtubeCompanion ? art.youtubeCompanion.duration : '20:00');
   };
+
+  useEffect(() => {
+    if (isOpen && initialArticleIdToEdit) {
+      const target = articles.find((a) => a.id === initialArticleIdToEdit);
+      if (target) {
+        handleOpenEditArticle(target);
+        setActiveTab('articles');
+      }
+    }
+  }, [isOpen, initialArticleIdToEdit, articles]);
 
   // SAVE ARTICLE
   const handleSaveArticle = (e: React.FormEvent) => {
@@ -990,7 +1010,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/40 space-y-1">
                   <span className="text-[10px] uppercase font-mono text-stone-400">Creator Channel</span>
                   <p className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                    YouTube @AkshayTech
+                    BroSis Tech Tamil (@brosistech)
                   </p>
                   <p className="text-[11px] text-stone-500">
                     128K+ subscribers · Sapiexa Media
@@ -1005,6 +1025,57 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <p className="text-[11px] text-stone-500">
                     Direct recipient for 1-on-1 strategy & sponsor bookings
                   </p>
+                </div>
+              </div>
+
+              {/* Master Passcode Protection Setting */}
+              <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-950/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-emerald-600" />
+                      <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 uppercase tracking-wider">
+                        Master Owner Passkey (Restricted Strictly to Antony Akshay)
+                      </h4>
+                    </div>
+                    <p className="text-[11px] text-stone-500">
+                      This private passkey protects the Admin Studio and ensures nobody else can edit your articles, YouTube data, or affiliate partnerships. Keep it confidential.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 max-w-md">
+                  <div className="relative flex-1">
+                    <input
+                      type={showNewPasscode ? 'text' : 'password'}
+                      value={newPasscode}
+                      onChange={(e) => setNewPasscode(e.target.value)}
+                      placeholder="Enter new private passkey..."
+                      className="w-full pr-10 p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 font-mono text-xs text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPasscode(!showNewPasscode)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                      title={showNewPasscode ? 'Hide passkey' : 'Show passkey'}
+                    >
+                      {showNewPasscode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newPasscode.trim()) return;
+                      setAdminPasscode(newPasscode.trim());
+                      try {
+                        localStorage.setItem('akshay_admin_passcode', newPasscode.trim());
+                      } catch {}
+                      showToast('Owner passkey updated successfully!');
+                    }}
+                    className="px-4 py-2 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-semibold hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>Update Passkey</span>
+                  </button>
                 </div>
               </div>
 
@@ -1036,9 +1107,20 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
         {/* Modal Footer */}
         <div className="p-4 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs">
-          <span className="text-stone-500 font-mono">
-            Signed in as Akshay (Founder & Administrator)
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-stone-500 font-mono">
+              Signed in as Akshay (Owner)
+            </span>
+            <button
+              onClick={() => {
+                onSignOut();
+                onClose();
+              }}
+              className="text-red-600 hover:underline font-semibold cursor-pointer"
+            >
+              Lock & Sign Out
+            </button>
+          </div>
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold cursor-pointer"
