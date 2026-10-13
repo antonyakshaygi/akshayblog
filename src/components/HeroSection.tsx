@@ -81,6 +81,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
+                        </div>
+
 
           {/* Right Column: Studio Anchor Visual */}
           <div className="lg:col-span-5 flex flex-col justify-center">
