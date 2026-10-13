@@ -21,12 +21,12 @@ const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 // Helper to fetch live real-time stories from Hacker News & tech APIs
 async function fetchRealtimeExternalStories() {
   try {
-    const res = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json?limitToFirst=5&orderBy="$key"');
+    const res = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json?orderBy=%22$key%22&limitToFirst=30');
     if (!res.ok) return;
     const storyIds: number[] = await res.json();
     if (!Array.isArray(storyIds)) return;
 
-    for (const id of storyIds.slice(0, 3)) {
+    for (const id of storyIds.slice(0, 25)) {
       try {
         const itemRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
         if (!itemRes.ok) continue;
@@ -90,13 +90,70 @@ async function fetchRealtimeExternalStories() {
         // Individual item fetch error ignored
       }
     }
+    liveNewsArticles = liveNewsArticles.slice(0, 100);
   } catch (err) {
     // Top stories fetch error ignored
   }
 }
 
+
+// Pull a broader, continuously refreshed feed from Google News RSS. RSS headlines
+// are attributed to their original publisher and deduplicated against the live wire.
+async function fetchGoogleNewsStories() {
+  const feeds = [
+    'https://news.google.com/rss/search?q=India+finance+markets+RBI+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
+    'https://news.google.com/rss/search?q=artificial+intelligence+technology+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
+    'https://news.google.com/rss/search?q=Indian+business+startups+technology+when:1d&hl=en-IN&gl=IN&ceid=IN:en'
+  ];
+  const decode = (value: string) => value
+    .replace(/<!\[CDATA\[|\]\]>/g, '')
+    .replace(/&amp;/g, '&').replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/<[^>]*>/g, '').trim();
+  const results = await Promise.allSettled(feeds.map(async (url) => {
+    const response = await fetch(url, { signal: AbortSignal.timeout(10000), headers: { 'User-Agent': 'SapiexaNewsroom/1.0' } });
+    if (!response.ok) return [];
+    const xml = await response.text();
+    return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].slice(0, 12).map((match) => {
+      const block = match[1];
+      const field = (name: string) => decode(block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)<\\/${name}>`, 'i'))?.[1] || '');
+      const title = field('title');
+      const link = field('link');
+      const pubDate = field('pubDate');
+      const source = field('source') || 'Google News RSS publisher';
+      if (!title || !link) return null;
+      const id = `rss-${Buffer.from(link).toString('base64url').slice(0, 48)}`;
+      const isAi = /ai|artificial intelligence|chip|semiconductor|software|technology|startup|google|openai/i.test(title);
+      const isFin = /market|stock|rbi|bank|economy|finance|rupee|sensex|nifty|inflation/i.test(title);
+      const timestamp = pubDate ? new Date(pubDate).getTime() : Date.now();
+      return {
+        id,
+        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70),
+        title,
+        summary: `Latest report from ${source}. Open the original publisher's report for full details and context.`,
+        fullContent: [`${title}`, `Publisher: ${source}.`, `This headline was collected from a public Google News RSS feed. Read the original report for full details: ${link}`],
+        category: isFin ? 'financial-markets' : isAi ? 'ai-deep-tech' : 'big-tech',
+        publishedAt: Number.isFinite(timestamp) ? new Date(timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) + ' IST' : 'Recently published',
+        publishedTimestamp: Number.isFinite(timestamp) ? timestamp : Date.now(),
+        readTime: '2 min read',
+        source: { name: source, domain: (() => { try { return new URL(link).hostname; } catch { return 'news.google.com'; } })(), url: link, isVerified: true },
+        marketImpact: { sentiment: 'NEUTRAL', reason: 'Headline surfaced from a current publisher feed; verify details in the linked original report.' },
+        aiSeo: { keyTakeaways: [title, `Publisher: ${source}`, 'Read the linked source for the complete report.'], geoSummary: title, targetKeywords: ['India News', 'Technology', 'Financial Markets'], readabilityScore: 90, factChecked: false, confidenceScore: 75, jsonLdSchema: { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: title } },
+        isBreaking: Date.now() - timestamp < 2 * 60 * 60 * 1000,
+        author: { name: source, role: 'Original publisher · RSS feed' }
+      } as NewsArticleItem;
+    }).filter(Boolean) as NewsArticleItem[];
+  }));
+  const incoming = results.flatMap((result) => result.status === 'fulfilled' ? result.value : []);
+  const existing = new Set(liveNewsArticles.map((article) => article.id));
+  liveNewsArticles = [...incoming.filter((article) => !existing.has(article.id)), ...liveNewsArticles]
+    .sort((a, b) => (b.publishedTimestamp || 0) - (a.publishedTimestamp || 0))
+    .slice(0, 100);
+}
+
 // Initial fetch on server startup
 fetchRealtimeExternalStories().catch(() => {});
+fetchGoogleNewsStories().catch(() => {});
 
 async function startServer() {
   const app = express();
@@ -104,10 +161,12 @@ async function startServer() {
 
   // 1. GET /api/news/realtime - Latest news feed & market tickers
   app.get('/api/news/realtime', async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     // Periodically fetch external stories every 60 seconds
     if (Date.now() - lastLiveFetchTimestamp > 60000) {
       lastLiveFetchTimestamp = Date.now();
       fetchRealtimeExternalStories().catch(() => {});
+      fetchGoogleNewsStories().catch(() => {});
     }
 
     // Add tiny realistic random tick to simulated prices for real-time feel
@@ -131,11 +190,39 @@ async function startServer() {
 
   // 2. GET /api/news/enewspaper - Daily 7:00 AM Morning Edition
   app.get('/api/news/enewspaper', (req, res) => {
-    res.json({
-      success: true,
-      edition: current7AmEdition,
-      timestamp: Date.now()
-    });
+    const now = new Date();
+    const todayStr = new Intl.DateTimeFormat('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+      timeZone: 'Asia/Kolkata'
+    }).format(now);
+    const istHour = Number(new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Kolkata'
+    }).format(now));
+
+    // Refresh the edition automatically on the first request after 7 AM IST each day.
+    // This also works on serverless/sleeping hosts that cannot run a persistent cron job.
+    if (istHour >= 7 && current7AmEdition.editionDate !== todayStr) {
+      const lead = liveNewsArticles[0];
+      current7AmEdition = {
+        ...current7AmEdition,
+        editionDate: todayStr,
+        publishedAt: 'Updated automatically after 07:00 AM IST',
+        publishedTimestamp: Date.now(),
+        leadHeadline: lead ? `THE BEST INDIA: ${lead.title.toUpperCase().slice(0, 100)}` : current7AmEdition.leadHeadline,
+        leadSubhead: lead?.summary || current7AmEdition.leadSubhead,
+        editorsBriefing: {
+          ...current7AmEdition.editorsBriefing,
+          title: `Morning Intelligence Briefing — ${todayStr}`,
+          paragraphs: [
+            `Good morning. This edition was refreshed on ${todayStr} using the latest available newsroom feed.`,
+            ...liveNewsArticles.slice(0, 4).map((article) => `${article.title} — ${article.summary}`)
+          ]
+        },
+        verifiedAt7AM: true
+      };
+    }
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.json({ success: true, edition: current7AmEdition, timestamp: Date.now() });
   });
 
   // 3. POST /api/news/generate - Autonomous AI synthesis using Gemini 3.8 Flash

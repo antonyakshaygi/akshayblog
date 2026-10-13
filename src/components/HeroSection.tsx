@@ -70,7 +70,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-medium transition-colors shadow-sm cursor-pointer"
               >
                 <Youtube className="w-4 h-4" />
-                <span>BroSis Tech Tamil ({AUTHOR_PROFILE.socials.subscribers})</span>
+                <span>BroSis Tech Tamil</span>
               </button>
 
               <button
@@ -81,23 +81,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-
-            {/* Channel proof metrics adjacent to callouts */}
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400">
-              <div>
-                <p className="text-lg sm:text-xl font-editorial font-bold text-stone-900 dark:text-stone-100 font-mono tabular-nums">128K+</p>
-                <p className="text-xs">Dev Subscribers</p>
-              </div>
-              <div>
-                <p className="text-lg sm:text-xl font-editorial font-bold text-stone-900 dark:text-stone-100 font-mono tabular-nums">4.2M+</p>
-                <p className="text-xs">Lifetime Views</p>
-              </div>
-              <div>
-                <p className="text-lg sm:text-xl font-editorial font-bold text-stone-900 dark:text-stone-100 font-mono tabular-nums">₹11.8L</p>
-                <p className="text-xs">Monthly Revenue (INR)</p>
-              </div>
-            </div>
-          </div>
 
           {/* Right Column: Studio Anchor Visual */}
           <div className="lg:col-span-5 flex flex-col justify-center">

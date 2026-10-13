@@ -7,7 +7,7 @@ import {
   FileText, Copy
 } from 'lucide-react';
 import { NewsArticleItem, MarketTicker, ENewspaperEdition, NewsCategory } from '../types/news';
-import { INITIAL_MARKET_TICKERS, INITIAL_NEWS_ARTICLES, INITIAL_7AM_ENEWSPAPER_EDITION } from '../data/newsData';
+
 
 interface FinancialTechNewsPageProps {
   onOpenConsultationModal?: () => void;
@@ -22,9 +22,28 @@ export const FinancialTechNewsPage: React.FC<FinancialTechNewsPageProps> = ({
   const [activeView, setActiveView] = useState<'enewspaper' | 'livewire' | 'ai-generator'>('enewspaper');
   
   // News state
-  const [marketTickers, setMarketTickers] = useState<MarketTicker[]>(INITIAL_MARKET_TICKERS);
-  const [articles, setArticles] = useState<NewsArticleItem[]>(INITIAL_NEWS_ARTICLES);
-  const [edition7Am, setEdition7Am] = useState<ENewspaperEdition>(INITIAL_7AM_ENEWSPAPER_EDITION);
+  const [marketTickers, setMarketTickers] = useState<MarketTicker[]>([]);
+  const [articles, setArticles] = useState<NewsArticleItem[]>([]);
+  const [edition7Am, setEdition7Am] = useState<ENewspaperEdition>(() => {
+    const emptyArticle: NewsArticleItem = {
+      id: 'pending-news', slug: 'pending-news', title: 'Waiting for the latest publisher headlines',
+      summary: 'The newsroom is connecting to live news feeds. Refresh shortly to see the latest reports.',
+      fullContent: ['Live publisher headlines are being loaded.', 'No market claims are shown until a source is available.', 'Use the original publisher links for complete reports.'],
+      category: 'all', publishedAt: 'Waiting for feed', publishedTimestamp: 0, readTime: '1 min read',
+      source: { name: 'Sapiexa Newsroom', domain: 'akshayblog.sapiexa.com', isVerified: false },
+      marketImpact: { sentiment: 'NEUTRAL', reason: 'No market impact inferred.' },
+      aiSeo: { keyTakeaways: ['Waiting for live headlines.'], geoSummary: 'Waiting for live headlines.', targetKeywords: [], readabilityScore: 0, factChecked: false, confidenceScore: 0, jsonLdSchema: {} },
+      author: { name: 'Sapiexa Newsroom', role: 'News Desk' }
+    };
+    return {
+      id: 'pending-edition', editionDate: 'Awaiting live edition', volumeIssue: 'LIVE NEWSROOM',
+      publishedAt: 'Waiting for scheduled edition', publishedTimestamp: 0,
+      leadHeadline: 'THE BEST INDIA: LIVE NEWSROOM', leadSubhead: 'Connecting to current publisher feeds.', leadArticle: emptyArticle,
+      marketSnapshot: [], aiAndTechTopStories: [], financialTopStories: [], indianEconomyTopStories: [],
+      editorsBriefing: { author: 'Sapiexa Newsroom', role: 'Editorial Desk', title: 'Morning Intelligence Briefing', paragraphs: ['The latest publisher headlines will appear when the feed refresh completes.'], highlightQuote: 'Read the source. Check the facts.' },
+      curatedCount: 0, verifiedAt7AM: false
+    };
+  });
   
   // Real-time polling & sync
   const [isAutoSyncEnabled, setIsAutoSyncEnabled] = useState(true);
@@ -54,13 +73,11 @@ export const FinancialTechNewsPage: React.FC<FinancialTechNewsPageProps> = ({
   const fetchRealtimeNews = async (showLoading = false) => {
     if (showLoading) setIsRefreshing(true);
     try {
-      const res = await fetch('/api/news/realtime');
+      const res = await fetch('/api/news/realtime', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.marketTickers) setMarketTickers(data.marketTickers);
-        if (data.articles && data.articles.length > 0) {
-          setArticles(data.articles);
-        }
+        if (Array.isArray(data.articles)) setArticles(data.articles);
       }
       setLastRefreshedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     } catch {
@@ -74,7 +91,7 @@ export const FinancialTechNewsPage: React.FC<FinancialTechNewsPageProps> = ({
   // Fetch 7 AM E-Newspaper edition
   const fetch7AmEdition = async () => {
     try {
-      const res = await fetch('/api/news/enewspaper');
+      const res = await fetch('/api/news/enewspaper', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.edition) setEdition7Am(data.edition);
@@ -93,6 +110,7 @@ export const FinancialTechNewsPage: React.FC<FinancialTechNewsPageProps> = ({
     if (!isAutoSyncEnabled) return;
     const interval = setInterval(() => {
       fetchRealtimeNews(false);
+      fetch7AmEdition();
     }, 30000);
     return () => clearInterval(interval);
   }, [isAutoSyncEnabled]);
@@ -163,10 +181,10 @@ export const FinancialTechNewsPage: React.FC<FinancialTechNewsPageProps> = ({
         setActiveView('livewire');
         setSelectedNewsArticle(data.article);
       } else {
-        setAiGenSuccessMsg('Generated and published to live wire feed.');
+        setAiGenSuccessMsg(data.error || 'The server could not generate the analysis.');
       }
     } catch {
-      setAiGenSuccessMsg('AI wire dispatch generated and synchronized.');
+      setAiGenSuccessMsg('Could not generate the analysis. Check the Cloudflare Gemini secret and try again.');
     } finally {
       setIsGeneratingAi(false);
     }
@@ -227,11 +245,14 @@ export const FinancialTechNewsPage: React.FC<FinancialTechNewsPageProps> = ({
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">
-              MARKETS LIVE
+              NEWS FEED LIVE
             </span>
           </div>
 
           <div className="flex items-center gap-6 overflow-x-auto no-scrollbar py-0.5 text-xs font-mono">
+            {marketTickers.length === 0 && (
+              <span className="shrink-0 text-stone-500 dark:text-stone-400">Verified live market quotes are not configured. Headlines link to their original publishers.</span>
+            )}
             {marketTickers.map((ticker) => (
               <div key={ticker.symbol} className="flex items-center gap-2 shrink-0">
                 <span className="font-bold text-stone-900 dark:text-stone-100">{ticker.symbol}</span>
@@ -251,7 +272,7 @@ export const FinancialTechNewsPage: React.FC<FinancialTechNewsPageProps> = ({
           <div className="hidden lg:flex items-center gap-3 shrink-0 pl-3 border-l border-stone-300 dark:border-stone-700 text-[11px] font-mono text-stone-500">
             <span>Sync: {lastRefreshedTime}</span>
             <button 
-              onClick={() => fetchRealtimeNews(true)}
+              onClick={async () => { await fetchRealtimeNews(true); await fetch7AmEdition(); }}
               className="hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer"
               title="Manual refresh"
             >

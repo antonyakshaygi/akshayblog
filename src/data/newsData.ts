@@ -452,7 +452,7 @@ export const INITIAL_7AM_ENEWSPAPER_EDITION: ENewspaperEdition = {
     title: 'The Best India · 7:00 AM Executive Briefing: Navigating the AI & Capital Convergence',
     highlightQuote: 'In 2026, technology without disciplined financial acumen is an incomplete journey, and finance without deep AI comprehension is obsolete.',
     paragraphs: [
-      'Good morning to our 128,000+ BroSis Tech Tamil subscribers, engineers, and financial strategists across India and abroad. Welcome to your daily 7:00 AM customized intelligence briefing.',
+      'Good morning to BroSis Tech Tamil viewers, engineers, and financial strategists across India and abroad. Welcome to your daily 7:00 AM customized intelligence briefing.',
       'Today\'s economic print confirms what we have observed on our YouTube studio floor over the last eighteen months: India\'s transition from purely software services to deep-tech hardware, domestic silicon packaging, and autonomous intelligence is accelerating rapidly.',
       'The RBI\'s rate pause at 6.50% provides the exact low-volatility backdrop required for engineering founders and creators to build sustainable, cash-generative technology ventures. Take note of the Nvidia Blackwell volume deployment — this will slash local AI API bills by more than half, enabling solo creators to build multi-agent apps on leaner budgets.',
       'Read through today\'s verified stories, review the market tickers, and let\'s execute with speed and precision. See you this evening on YouTube for our complete video breakdown!'

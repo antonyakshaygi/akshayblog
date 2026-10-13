@@ -336,7 +336,7 @@ export const MonetizationAdManager: React.FC<MonetizationAdManagerProps> = ({
               Akshay & Sapiexa Media 2026 Rate Card
             </h3>
             <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
-              For tech companies, developer tools, and consumer electronics brands seeking direct promotion to 128,000+ active engineers.
+              For tech companies, developer tools, and consumer electronics brands seeking relevant promotion to a technical audience.
             </p>
           </div>
 

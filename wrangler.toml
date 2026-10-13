@@ -1,0 +1,9 @@
+name = "akshay-s-tech-blog"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-10-12"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "akshay-s-tech-blog-db"
+database_id = "66f8113e-e10a-445a-ae9d-00c9a0695031"
+migrations_dir = "migrations"

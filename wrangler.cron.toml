@@ -1,0 +1,14 @@
+name = "akshay-s-tech-blog-news-cron"
+main = "worker/cron.ts"
+compatibility_date = "2026-10-12"
+
+[triggers]
+crons = ["*/15 * * * *", "30 1 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "akshay-s-tech-blog-db"
+database_id = "66f8113e-e10a-445a-ae9d-00c9a0695031"
+
+# Configure GEMINI_API_KEY as a Worker secret with:
+# npx wrangler secret put GEMINI_API_KEY --config wrangler.cron.toml

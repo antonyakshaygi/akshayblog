@@ -1013,7 +1013,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     BroSis Tech Tamil (@brosistech)
                   </p>
                   <p className="text-[11px] text-stone-500">
-                    128K+ subscribers · Sapiexa Media
+                    Sapiexa Media
                   </p>
                 </div>
 

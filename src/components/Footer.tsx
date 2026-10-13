@@ -143,7 +143,7 @@ export const Footer: React.FC<FooterProps> = ({
               Creator Channels
             </p>
             <p className="text-stone-500 leading-relaxed">
-              Join 128,000+ developers receiving weekly code architectures and honest hardware breakdowns.
+              Weekly code architectures, engineering insights, and honest hardware breakdowns.
             </p>
             <div className="pt-1 flex flex-col gap-2">
               <a
@@ -153,7 +153,7 @@ export const Footer: React.FC<FooterProps> = ({
                 className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 font-medium"
               >
                 <Youtube className="w-4 h-4" />
-                <span>BroSis Tech Tamil ({AUTHOR_PROFILE.socials.subscribers})</span>
+                <span>BroSis Tech Tamil</span>
               </a>
               <button
                 onClick={onOpenConsultationModal}

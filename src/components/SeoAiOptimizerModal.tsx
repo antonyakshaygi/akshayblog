@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Check, Copy, Search, Globe, Code, FileText, CheckCircle, ExternalLink, ShieldCheck, HelpCircle } from 'lucide-react';
 import { Article } from '../types/blog';
-import { INITIAL_ARTICLES, AUTHOR_PROFILE } from '../data/blogData';
+import { AUTHOR_PROFILE } from '../data/blogData';
 
 interface SeoAiOptimizerModalProps {
   isOpen: boolean;
@@ -12,12 +12,23 @@ interface SeoAiOptimizerModalProps {
 export const SeoAiOptimizerModal: React.FC<SeoAiOptimizerModalProps> = ({
   isOpen,
   onClose,
-  currentArticle = INITIAL_ARTICLES[0],
+  currentArticle,
 }) => {
   const [activeTab, setActiveTab] = useState<'schema' | 'serp' | 'ai-search' | 'dns' | 'files'>('schema');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
   if (!isOpen) return null;
+  if (!currentArticle) {
+    return (
+      <div className="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-2xl border border-stone-800 bg-stone-900 p-6 text-stone-100 shadow-2xl">
+          <h2 className="text-lg font-bold">SEO & AI Search Optimizer</h2>
+          <p className="mt-3 text-sm text-stone-400">Publish or select an article first. The sitemap currently contains no article URLs because the old demo posts were removed.</p>
+          <button onClick={onClose} className="mt-5 w-full rounded-lg bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-900">Close</button>
+        </div>
+      </div>
+    );
+  }
 
   const handleCopy = (text: string, sectionId: string) => {
     navigator.clipboard.writeText(text);
@@ -131,7 +142,7 @@ Sitemap: https://akshayblog.sapiexa.com/sitemap.xml`;
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  ${INITIAL_ARTICLES.map(
+  ${[currentArticle].map(
     (a) => `  <url>
     <loc>https://akshayblog.sapiexa.com/${a.slug}</loc>
     <lastmod>2026-10-10</lastmod>

@@ -20,7 +20,7 @@ import { AdminLoginModal } from './components/AdminLoginModal';
 import { FinancialTechNewsPage } from './components/FinancialTechNewsPage';
 import { Footer } from './components/Footer';
 
-import { INITIAL_ARTICLES, INITIAL_AD_UNITS, INITIAL_AFFILIATE_ITEMS, AUTHOR_PROFILE } from './data/blogData';
+import { INITIAL_AD_UNITS, AUTHOR_PROFILE } from './data/blogData';
 import { Article, ThemeSettings, AffiliateItem, AdUnit } from './types/blog';
 import { Sparkles, Mail, Check, ArrowRight, ShieldCheck, Tag } from 'lucide-react';
 
@@ -50,44 +50,19 @@ export default function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
 
-  // DYNAMIC STATE WITH LOCALSTORAGE PERSISTENCE
-  const [articles, setArticles] = useState<Article[]>(() => {
+  // Start with an intentionally empty publication and gear list. A one-time migration
+  // clears legacy storage keys so old demo posts cannot silently reappear after deployment.
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [affiliateItems, setAffiliateItems] = useState<AffiliateItem[]>([]);
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem('akshay_blog_articles_v2');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const hasIpad = parsed.some((a: any) => a.id === 'article-ipad-11');
-        if (!hasIpad) {
-          const merged = [INITIAL_ARTICLES[0], ...parsed];
-          localStorage.setItem('akshay_blog_articles_v2', JSON.stringify(merged));
-          return merged;
-        }
-        return parsed;
+      const migrationKey = 'akshay_blog_empty_content_migration_v1';
+      if (!localStorage.getItem(migrationKey)) {
+        ['akshay_blog_articles_v2', 'akshay_blog_articles_v3', 'akshay_blog_affiliates_v2', 'akshay_blog_affiliates_v3'].forEach((key) => localStorage.removeItem(key));
+        localStorage.setItem(migrationKey, 'done');
       }
-      return INITIAL_ARTICLES;
-    } catch {
-      return INITIAL_ARTICLES;
-    }
-  });
-
-  const [affiliateItems, setAffiliateItems] = useState<AffiliateItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('akshay_blog_affiliates_v2');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const hasIpadAff = parsed.some((item: any) => item.id === 'aff-ipad-11');
-        if (!hasIpadAff) {
-          const merged = [INITIAL_AFFILIATE_ITEMS[0], ...parsed];
-          localStorage.setItem('akshay_blog_affiliates_v2', JSON.stringify(merged));
-          return merged;
-        }
-        return parsed;
-      }
-      return INITIAL_AFFILIATE_ITEMS;
-    } catch {
-      return INITIAL_AFFILIATE_ITEMS;
-    }
-  });
+    } catch {}
+  }, []);
 
   const [adUnits, setAdUnits] = useState<AdUnit[]>(() => {
     try {
@@ -101,13 +76,13 @@ export default function App() {
   // Sync to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('akshay_blog_articles_v2', JSON.stringify(articles));
+      localStorage.setItem('akshay_blog_articles_v3', JSON.stringify(articles));
     } catch {}
   }, [articles]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('akshay_blog_affiliates_v2', JSON.stringify(affiliateItems));
+      localStorage.setItem('akshay_blog_affiliates_v3', JSON.stringify(affiliateItems));
     } catch {}
   }, [affiliateItems]);
 
@@ -130,7 +105,7 @@ export default function App() {
 
   // Theme settings state
   const [themeSettings, setThemeSettings] = useState<ThemeSettings>({
-    mode: 'warm-paper',
+    mode: 'dark',
     fontSize: 'md',
     accentColor: 'terracotta',
     readingWidth: 'standard',
@@ -138,17 +113,13 @@ export default function App() {
 
   // Apply theme settings to body and HTML root
   useEffect(() => {
-    document.body.setAttribute('data-theme', themeSettings.mode);
-    const root = document.documentElement;
-    if (themeSettings.mode === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    document.body.setAttribute('data-theme', 'dark');
+    document.documentElement.classList.add('dark');
+    document.documentElement.style.colorScheme = 'dark';
   }, [themeSettings.mode]);
 
   const updateThemeSettings = (newSettings: Partial<ThemeSettings>) => {
-    setThemeSettings((prev) => ({ ...prev, ...newSettings }));
+    setThemeSettings((prev) => ({ ...prev, ...newSettings, mode: 'dark' }));
   };
 
   const handleSignOut = () => {
@@ -178,12 +149,12 @@ export default function App() {
 
   const handleResetToDefaults = () => {
     if (!isAdminAuthenticated) return;
-    setArticles(INITIAL_ARTICLES);
-    setAffiliateItems(INITIAL_AFFILIATE_ITEMS);
+    setArticles([]);
+    setAffiliateItems([]);
     setAdUnits(INITIAL_AD_UNITS);
     try {
-      localStorage.removeItem('akshay_blog_articles_v2');
-      localStorage.removeItem('akshay_blog_affiliates_v2');
+      localStorage.removeItem('akshay_blog_articles_v3');
+      localStorage.removeItem('akshay_blog_affiliates_v3');
       localStorage.removeItem('akshay_blog_ads_v2');
     } catch {}
   };
@@ -344,7 +315,7 @@ export default function App() {
                   {filteredArticles.length === 0 ? (
                     <div className="text-center py-16 space-y-3">
                       <p className="text-lg font-editorial text-stone-600 dark:text-stone-400">
-                        No articles match "{searchQuery}"
+                        No blog posts yet — this page is ready for fresh publications.
                       </p>
                       <button
                         onClick={() => {
@@ -353,7 +324,7 @@ export default function App() {
                         }}
                         className="px-4 py-2 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-semibold cursor-pointer"
                       >
-                        Reset Search Filters
+                        Clear Filters
                       </button>
                     </div>
                   ) : (
@@ -407,7 +378,7 @@ export default function App() {
                       </form>
                     )}
                     <p className="text-[11px] text-stone-400">
-                      Join 14,800+ engineers subscribed to the Sapiexa weekly newsletter. Unsubscribe anytime.
+                      Get occasional updates from Sapiexa. Unsubscribe anytime.
                     </p>
                   </div>
                 </section>
@@ -462,7 +433,7 @@ export default function App() {
       <SeoAiOptimizerModal
         isOpen={isSeoModalOpen}
         onClose={() => setIsSeoModalOpen(false)}
-        currentArticle={selectedArticle || articles[0] || INITIAL_ARTICLES[0]}
+        currentArticle={selectedArticle || articles[0] || undefined}
       />
 
       <DomainSetupModal

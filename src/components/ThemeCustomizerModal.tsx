@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sliders, Sun, Moon, BookOpen, Check, Type, Eye } from 'lucide-react';
+import { Sliders, Moon } from 'lucide-react';
 import { ThemeSettings } from '../types/blog';
 
 interface ThemeCustomizerModalProps {
@@ -16,27 +16,6 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
   updateSettings,
 }) => {
   if (!isOpen) return null;
-
-  const colorThemes = [
-    {
-      id: 'warm-paper',
-      name: 'Warm Paper (Editorial)',
-      description: 'Archival warm limestone & soft alabaster',
-      bgClass: 'bg-[#fbf9f5] text-[#1c1917] border-stone-300',
-    },
-    {
-      id: 'light',
-      name: 'Clean Stark White',
-      description: 'Contemporary gallery crisp white & deep ink',
-      bgClass: 'bg-white text-stone-900 border-stone-200',
-    },
-    {
-      id: 'dark',
-      name: 'Dark Studio Slate',
-      description: 'Low-fatigue dark slate for late-night reading',
-      bgClass: 'bg-[#0f1115] text-[#f3f4f6] border-stone-800',
-    },
-  ];
 
   const fontSizes = [
     { id: 'sm', label: 'Compact', sample: '14px' },
@@ -63,31 +42,9 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
           </button>
         </div>
 
-        {/* Color Theme Selector */}
-        <div className="space-y-3">
-          <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
-            Palette & Background Tone
-          </label>
-          <div className="space-y-2">
-            {colorThemes.map((t) => {
-              const isSelected = settings.mode === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => updateSettings({ mode: t.id as any })}
-                  className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                    t.bgClass
-                  } ${isSelected ? 'ring-2 ring-stone-900 dark:ring-white shadow-sm' : 'opacity-85 hover:opacity-100'}`}
-                >
-                  <div>
-                    <p className="text-xs font-bold">{t.name}</p>
-                    <p className="text-[11px] opacity-75">{t.description}</p>
-                  </div>
-                  {isSelected && <Check className="w-4 h-4 shrink-0 ml-2" />}
-                </button>
-              );
-            })}
-          </div>
+        <div className="rounded-xl border border-stone-800 bg-stone-950 p-3 text-xs text-stone-300">
+          <div className="flex items-center gap-2 font-semibold"><Moon className="w-4 h-4" /> Dark Studio Slate is always enabled</div>
+          <p className="mt-1 text-stone-500">The website uses dark mode across every page.</p>
         </div>
 
         {/* Font Size Selector */}

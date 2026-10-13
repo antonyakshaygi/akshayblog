@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Youtube, Play, ExternalLink, Clock, Eye, CheckCircle, ArrowRight, Share2, Sparkles } from 'lucide-react';
-import { YOUTUBE_FEATURED_VIDEOS, AUTHOR_PROFILE, INITIAL_ARTICLES } from '../data/blogData';
+import { YOUTUBE_FEATURED_VIDEOS, AUTHOR_PROFILE } from '../data/blogData';
 import { Article } from '../types/blog';
 
 interface YouTubeHubProps {
@@ -40,7 +40,7 @@ export const YouTubeHub: React.FC<YouTubeHubProps> = ({
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm cursor-pointer"
           >
             <Youtube className="w-4 h-4 fill-current" />
-            <span>Subscribe on YouTube ({AUTHOR_PROFILE.socials.subscribers})</span>
+            <span>Subscribe on YouTube</span>
           </a>
           <button
             onClick={onOpenConsultationModal}
@@ -131,26 +131,9 @@ export const YouTubeHub: React.FC<YouTubeHubProps> = ({
               </div>
             </div>
 
-            {/* Read Companion Article Action */}
-            <div className="pt-4 border-t border-stone-200 dark:border-stone-800 space-y-2">
-              <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                Companion Written Article:
-              </p>
-              <button
-                onClick={() => {
-                  const matched = INITIAL_ARTICLES.find((a) => a.slug.includes('autonomous') || a.slug.includes('creator')) || INITIAL_ARTICLES[0];
-                  onSelectArticle(matched);
-                }}
-                className="w-full flex items-center justify-between p-3 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-stone-400 dark:hover:border-stone-600 bg-stone-50 dark:bg-stone-800/40 text-left transition-colors cursor-pointer group"
-              >
-                <div>
-                  <p className="text-xs font-medium text-stone-900 dark:text-stone-100 group-hover:underline">
-                    Read Complete Architecture Blueprint
-                  </p>
-                  <p className="text-[11px] text-stone-500">Includes code snippets, benchmarks & FAQs</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-stone-900 dark:group-hover:text-white transition-colors" />
-              </button>
+            <div className="pt-4 border-t border-stone-200 dark:border-stone-800">
+              <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">Companion Written Article</p>
+              <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">No companion article is published yet. New articles added by the editor will appear in the Articles section.</p>
             </div>
           </div>
         </div>

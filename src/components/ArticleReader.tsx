@@ -5,7 +5,7 @@ import {
   Copy, HelpCircle, ChevronDown, ChevronUp, ShieldCheck, Tag, Edit2, Lock
 } from 'lucide-react';
 import { Article, AffiliateItem } from '../types/blog';
-import { INITIAL_AFFILIATE_ITEMS, INITIAL_AD_UNITS } from '../data/blogData';
+import { INITIAL_AD_UNITS } from '../data/blogData';
 
 interface ArticleReaderProps {
   article: Article;
@@ -24,7 +24,7 @@ export const ArticleReader: React.FC<ArticleReaderProps> = ({
   onOpenYouTubeHub,
   onOpenConsultationModal,
   onOpenSeoOptimizer,
-  affiliateItems = INITIAL_AFFILIATE_ITEMS,
+  affiliateItems = [],
   isAdminAuthenticated = false,
   onEditArticle,
 }) => {
@@ -138,8 +138,7 @@ export const ArticleReader: React.FC<ArticleReaderProps> = ({
       (article.title.toLowerCase().includes('ipad') && item.name.toLowerCase().includes('ipad')) ||
       article.tags.some(tag => item.name.toLowerCase().includes(tag.toLowerCase()))
     ) ||
-    affiliateItems[0] || 
-    INITIAL_AFFILIATE_ITEMS[0];
+    affiliateItems[0];
 
   return (
     <div className="min-h-screen pb-20 relative">
@@ -580,7 +579,7 @@ export const ArticleReader: React.FC<ArticleReaderProps> = ({
               Need Direct Architectural Guidance or Sponsored Placements?
             </h4>
             <p className="text-xs text-stone-600 dark:text-stone-400">
-              Reach 128,000+ engineers, creators, and decision-makers across Sapiexa Media channels. Packages starting at ₹38,000.
+              Reach engineers, creators, and decision-makers across Sapiexa Media channels. Packages starting at ₹38,000.
             </p>
             <div className="pt-2">
               <button

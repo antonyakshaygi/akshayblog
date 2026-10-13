@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Tag, Copy, Check, ExternalLink, ShieldCheck, Plus, Sparkles, Filter, TrendingUp, Lock } from 'lucide-react';
-import { INITIAL_AFFILIATE_ITEMS } from '../data/blogData';
 import { AffiliateItem } from '../types/blog';
 
 interface AffiliateGearHubProps {
@@ -18,7 +17,7 @@ export const AffiliateGearHub: React.FC<AffiliateGearHubProps> = ({
   isAdminAuthenticated = false,
   onOpenAdminLogin,
 }) => {
-  const [localItems, setLocalItems] = useState<AffiliateItem[]>(INITIAL_AFFILIATE_ITEMS);
+  const [localItems, setLocalItems] = useState<AffiliateItem[]>([]);
   const items = propsItems || localItems;
   const setItems = propsSetItems || setLocalItems;
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -185,6 +184,13 @@ export const AffiliateGearHub: React.FC<AffiliateGearHubProps> = ({
       </div>
 
       {/* Product Grid */}
+      {filteredItems.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-stone-700 bg-stone-950/60 px-6 py-14 text-center">
+          <Tag className="w-7 h-7 text-stone-500 mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-stone-200">A fresh affiliate catalog starts here</h2>
+          <p className="mt-2 text-sm text-stone-500">Previous listings have been cleared. New products can be added from Admin Studio.</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredItems.map((item) => (
           <div
@@ -295,6 +301,7 @@ export const AffiliateGearHub: React.FC<AffiliateGearHubProps> = ({
           </div>
         ))}
       </div>
+      )}
 
       {/* Add New Affiliate Item Modal */}
       {showAddModal && (
